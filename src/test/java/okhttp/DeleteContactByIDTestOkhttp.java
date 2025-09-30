@@ -2,6 +2,7 @@ package okhttp;
 
 import com.google.gson.Gson;
 import dto.ContactDTO;
+import dto.ErrorDTO;
 import dto.MessageDTO;
 import okhttp3.*;
 
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.util.Random;
 
 public class DeleteContactByIDTestOkhttp {
-    String token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJST0xFX1VTRVIiXSwic3ViIjoibWFyZ29AZ21haWwuY29tIiwiaXNzIjoiUmVndWxhaXQiLCJleHAiOjE3NTkwNzE3NTAsImlhdCI6MTc1ODQ3MTc1MH0.FeP3SryF43GzXm78mm9nH3EEKhK9xrRcjmlc7uyJbCg";
+    String token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJST0xFX1VTRVIiXSwic3ViIjoiZHVzbTVAZ21haWwuY29tIiwiaXNzIjoiUmVndWxhaXQiLCJleHAiOjE3NTk3NDI5ODMsImlhdCI6MTc1OTE0Mjk4M30.YRegBcFuhpc2PQyJx_ecreV-_m6pL6IK4OdjDKiuOTE";
     Gson gson = new Gson();
     public static final MediaType JSON = MediaType.get("application/json;charset=utf-8");
     OkHttpClient client = new OkHttpClient();
@@ -36,7 +37,7 @@ public class DeleteContactByIDTestOkhttp {
         RequestBody body = RequestBody.create(gson.toJson(contactDTO), JSON);
 
         Request request = new Request.Builder()
-                .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts")
+                .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts/")
                 .post(body)
                 .addHeader("Authorization", token)
                 .build();
@@ -68,14 +69,34 @@ public class DeleteContactByIDTestOkhttp {
         Assert.assertEquals(dto.getMessage(), "Contact was deleted!");
         System.out.println(dto.getMessage());
     }
+
+    @Test
+    public void DeleteContactByIDWrongToken() throws IOException {
+        Request request = new Request.Builder()
+                .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts/" + id)
+                .delete()
+                .addHeader("Authorization", "vlknfdnvl")
+                .build();
+        Response response = client.newCall(request).execute();
+        Assert.assertEquals(response.code(), 401);
+        ErrorDTO errorDTO = gson.fromJson(response.body().string(), ErrorDTO.class);
+       Assert.assertEquals(errorDTO.getError(), "Unauthorized");
+
+    }
+    @Test
+    public void DeleteContactByIDNotFound() throws IOException {
+        Request request = new Request.Builder()
+                .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts/" + 123)
+                .delete()
+                .addHeader("Authorization", token)
+                .build();
+        Response response = client.newCall(request).execute();
+        Assert.assertEquals(response.code(), 400);
+        ErrorDTO errorDTO = gson.fromJson(response.body().string(), ErrorDTO.class);
+       Assert.assertEquals(errorDTO.getError(), "Bad Request");
+        System.out.println(errorDTO.getMessage());
+        Assert.assertEquals(errorDTO.getMessage(), "Contact with id: 123 not found in your contacts!");
+    }
 }
 
 
-//4b40514f-bd91-4623-91f9-f9401ccaa704
-//anna@anna
-//================================
-//a1357169-95db-4cb3-a29a-576efb04b57b
-//elena@ellema
-//================================
-//e2e9836f-3ed4-4925-8b0c-bd671d67c9f0
-//petr@petr
