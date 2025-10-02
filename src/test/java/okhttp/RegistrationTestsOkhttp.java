@@ -39,4 +39,10 @@ OkHttpClient client = new OkHttpClient();
     System.out.println(responseDTO.getToken());
 }
 
+@Test
+    public void registrationWrongEmail(){
+
+
+}
+
 }
